@@ -2,6 +2,8 @@
 
 Description-A desmos like application that lets users graph and apply matrix transformations to vectors on a 2D plane.
 
+Video demonstration avaliable at https://www.youtube.com/watch?v=mx1rhkuCLvw
+
 # Required
 
 A web browser to run the html file.
