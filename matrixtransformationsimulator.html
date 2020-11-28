@@ -1,0 +1,212 @@
+<html>
+	<head>
+		<style>
+			canvas{
+				   border  : 1px solid black;
+				  }
+		</style>
+		
+	 <canvas id="canvas" width="600" height = "600" onclick="showCoordinates(event)"></canvas>
+	 <br>
+	 Click on canvas to see coordinates
+	 <br>
+	 <input type="text" id="coordinates" readonly>
+	 <br>
+	 Create vector here:
+	 <br>
+	 <input type="number" id="vectorEntry1">
+	 <input type="number" id="vectorEntry2">
+	 <br>
+	 <input type="button" value ="Create Vector"onclick="createVector()">
+	 <br>
+	 Enter matrix here:
+	 <br>
+	 <input type="number"  id="matrixEntry1">
+	 <input type="number"  id="matrixEntry2">
+	 <br>
+	 <input type="number" id="matrixEntry3">
+	 <input type="number" id="matrixEntry4">
+	 <br>
+	 <input type="button" value ="Apply Matrix"onclick="applyMatrix()">
+	 <br>
+	 <input type="button" value ="Transform Vectors"onclick="transformVectors()">
+	 <br>
+	 Scale Factor
+	 <input type="number" id="scale" value="300">
+	 <br>
+	 Start X
+	 <input type="number" id="startX" value="0">
+	 <br>
+	 Start Y
+	 <input type="number" id="startY" value="0">
+	 <br>
+	 <input type="button" value ="Apply"onclick="apply()">
+	 <br>
+	 Choose color for vectors
+	 <br>
+	 <input type="color" id="vectorColor" value="#000000 ">
+	 <br>
+	 Choose color for transformed vectors
+	 <br>
+	 <input type="color" id="transformedVectorColor" value="#ff0000">
+	 <br>
+	 <input type="button" value ="Restart"onclick="location.reload()">
+	 </head>
+	 <body>
+		<script>
+		
+			// global variables 
+			var x,y;
+			var vector = new Array();
+			var vectors = new Array();
+			var matrix = new Array();
+			var i;
+			var scaleFactor = 1;
+			var color;
+			var startX=0,startY=0;
+			
+			// global constants 
+			const canvas = document.getElementById("canvas");
+			const context = canvas.getContext('2d');
+			
+			const vectorEntry1Box = document.getElementById("vectorEntry1");
+			const vectorEntry2Box = document.getElementById("vectorEntry2");
+			
+			const matrixEntry1Box = document.getElementById("matrixEntry1");
+			const matrixEntry2Box = document.getElementById("matrixEntry2");
+			const matrixEntry3Box = document.getElementById("matrixEntry3");
+			const matrixEntry4Box = document.getElementById("matrixEntry4");
+			
+			const xSelectBox = document.getElementById("startX");
+			const ySelectBox = document.getElementById("startY");
+			
+			const vectorColorPicker = document.getElementById("vectorColor");
+			const transformedVectorColorPicker = document.getElementById("transformedVectorColor");
+			const scaleSelectBox = document.getElementById("scale");
+			const coordinatesBox = document.getElementById("coordinates");
+			const rect = canvas.getBoundingClientRect();
+			
+			drawGridLines();
+			
+			// draw grid lines 
+			function drawGridLines(){
+				
+				context.strokeStyle = "black";
+				
+				for(x=0;x<=600;x+=50){
+				
+					if(x == 300){
+						context.lineWidth = 4;
+					}
+				
+					else{
+						context.lineWidth = 1;
+					}
+				
+					context.beginPath();
+					context.moveTo(x,0);
+					context.lineTo(x,600);
+					context.stroke();
+				}
+			
+		
+				for(y=0;y<=600;y+=50){
+				
+					if(y == 300){
+						context.lineWidth = 4;
+					}
+				
+					else{
+						context.lineWidth = 1;
+					}
+				
+					context.beginPath();
+					context.moveTo(0,y);
+					context.lineTo(600,y);
+					context.stroke();
+				
+				}
+			}
+			
+			function apply(){
+				
+				if(!isNaN(scaleSelectBox.value) && Number(scaleSelectBox.value)>0 && !isNaN(xSelectBox.value) && !isNaN(ySelectBox.value)){
+					
+					scaleFactor = 300/Number(scaleSelectBox.value);
+					
+					startX =  Number(xSelectBox.value);
+					startY =  Number(ySelectBox.value);
+					
+				}
+				
+				redrawVectors();
+			}
+			
+			function showCoordinates(event){
+				
+				coordinatesBox.value = "("+((event.clientX-rect.left-300)/scaleFactor+startX).toString()+" , "+((event.clientY-rect.top-300)/(-1*scaleFactor)+startY).toString()+")";
+			
+			}
+			
+			function createVector(){
+				
+				if(!isNaN(vectorEntry1Box.value) && !isNaN(vectorEntry2Box.value)){
+					if(-600<=Number(vectorEntry1Box.value) && Number(vectorEntry1Box.value)<=600 && -600<=Number(vectorEntry2Box.value) && Number(vectorEntry2Box.value)<= 600){
+						
+						color = vectorColorPicker.value.toString();
+						vector = [Number(vectorEntry1Box.value),Number(vectorEntry2Box.value),color];
+						vectors.push(vector);
+						
+						
+						redrawVectors();
+					}
+				}
+				
+			}
+			
+			function applyMatrix(){
+			
+				if(!isNaN(matrixEntry1Box.value) && !isNaN(matrixEntry2Box.value) && !isNaN(matrixEntry3Box.value) && !isNaN(matrixEntry4Box.value)){
+					matrix = [[Number(matrixEntry1Box.value),Number(matrixEntry2Box.value)],[Number(matrixEntry3Box.value),Number(matrixEntry4Box.value)]];
+					
+				}
+			}
+			
+			function transformVectors(){
+				
+				context.lineWidth = 3;
+				
+				for (i=0;i<=vectors.length-1;i++){
+				
+					// transform vectors
+					color = transformedVectorColorPicker.value.toString();
+					vectors[i]=[matrix[0][0]*vectors[i][0]+matrix[0][1]*vectors[i][1],matrix[1][0]*vectors[i][0]+matrix[1][1]*vectors[i][1],color];
+				}
+				
+				redrawVectors();
+				
+			}
+			
+			function redrawVectors(){
+				
+				context.clearRect(0,0,canvas.width,canvas.height);
+				
+				drawGridLines();
+					
+				for (i=0;i<=vectors.length-1;i++){
+				
+					// draw vector
+					context.lineWidth = 3;
+					context.strokeStyle = vectors[i][2];
+					context.beginPath();
+					context.moveTo(300,300);
+					context.lineTo(scaleFactor*(vectors[i][0]+300-startX),-1*scaleFactor*(vectors[i][1]-startY)+300);
+					context.stroke();
+				
+				}
+			}
+			
+			
+		</script>
+	</body>
+</html>
